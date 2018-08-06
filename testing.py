@@ -381,12 +381,7 @@ def transitivity_global(start_date, periods, filename):
     
         
 
-
-
-start_date = '2009-01-01'
-end_date = '2009-03-01'
-
-
+dates = [('2009-01-01', '2009-01-07'), ('2009-01-01', '2009-01-14'), ('2009-01-01', '2009-01-21')]
 
 connection = pyodbc.connect("DRIVER={/usr/local/lib/libmyodbc8w.so}; SERVER=localhost; PORT=3306;DATABASE=abe; UID=abe; PASSWORD=th0rnxtc")
 
