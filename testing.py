@@ -1,6 +1,14 @@
 #!/usr/bin/env python2
 # -*- coding: utf-8 -*-
 """
+Created on Mon Aug  6 23:26:40 2018
+
+@author: SuleymanBayramov
+"""
+
+#!/usr/bin/env python2
+# -*- coding: utf-8 -*-
+"""
 Created on Tue Jul 31 22:33:58 2018
 
 @author: SuleymanBayramov
@@ -8,22 +16,11 @@ Created on Tue Jul 31 22:33:58 2018
 
 
 from datetime import datetime 
-
-
 import pandas as pd
 import datetime
-import pymysql
+import pyodbc
 import numpy as np
-from collections import defaultdict
-
 import igraph
-
-
-import json
-import py2neo
-
-import matplotlib.pyplot as plt
-
 
 
 
@@ -123,13 +120,13 @@ class BlockChainGraph(object):
         cursor = self.cursor()
         cursor.execute(
             "select txout.pubkey_id from txin inner join txout inner join tx "
-            "where txin.tx_id = %s and txin.tx_id = tx.tx_id and txin.txout_id = txout.txout_id", tx_id)
+            "where txin.tx_id = ? and txin.tx_id = tx.tx_id and txin.txout_id = txout.txout_id", tx_id)
         return [Input(*r) for r in cursor]
 
     def tx_out(self, tx_id):
         cursor = self.cursor()
         cursor.execute(
-            "select txout_value, txout_pos, txout.pubkey_id from txout where tx_id = %s", tx_id)
+            "select txout_value, txout_pos, txout.pubkey_id from txout where tx_id = ?", tx_id)
         return [Output(*r) for r in cursor]
 
     @property
@@ -143,7 +140,7 @@ class BlockChainGraph(object):
         cursor = self.cursor()
         cursor.execute(
             "select count(*) from txin inner join txout on txin.txout_id = txout.txout_id "
-                            "where pubkey_id = %s", pubkey_id)
+                            "where pubkey_id = ?", pubkey_id)
         return cursor.fetchone()[0]
 
     def associate_address_with_user(self, pubkey_id, user):
@@ -240,17 +237,17 @@ class BlockChainGraph(object):
 
     def parse_block(self, block_id):
         cursor = self.cursor()
-        cursor.execute("select block_nTime from block where block_id = %s", block_id)
+        cursor.execute("select block_nTime from block where block_id = ?", block_id)
         timestamp = int(cursor.fetchone()[0])
         cursor = self.cursor()
-        cursor.execute("select distinct tx_id from txin_detail where block_id = %s", block_id)
+        cursor.execute("select distinct tx_id from txin_detail where block_id = ?", block_id)
         for row in cursor:
             self.parse_transaction(int(row[0]), timestamp=timestamp, block_id=block_id)
             
             
     def parse_block_ontime(self, start_time, end_time):
          cursor = self.cursor()
-         cursor.execute("select block_id from block where from_unixtime(block_nTime) > %s and from_unixtime(block_nTime) <= %s",(start_time, end_time))
+         cursor.execute("select block_id from block where from_unixtime(block_nTime) > ? and from_unixtime(block_nTime) <= ?",(start_time, end_time))
          blocks = cursor.fetchall()
          for block in blocks:
              self.parse_block(block)
@@ -261,7 +258,7 @@ class BlockChainGraph(object):
     
     def parse_trs_in_block(self, block_id):
         cursor = self.cursor()
-        cursor.execute("select distinct tx_id from txin_detail where block_id = %s", block_id)
+        cursor.execute("select distinct tx_id from txin_detail where block_id = ?", block_id)
         for row in cursor:
             self.parse_transaction(int(row[0]), timestamp=timestamp, block_id=block_id)
         
@@ -384,42 +381,24 @@ def transitivity_global(start_date, periods, filename):
     
         
 
-start_date = '2012-01-01'
-dates = generate_periods(start_date, 26)
 
 
-start_date = '2010-01-01'
-end_date = '2011-03-01'
-connection = pymysql.connect(host='localhost', user='root', passwd='Mama1995', db='ABE')
-bcg = BlockChainGraph(connection)
-bcg.parse_block_ontime(start_date, end_date)
+start_date = '2009-01-01'
+end_date = '2009-03-01'
 
 
 
-filename = '2.graphml'
-bcg.as_igraph.write_graphml(filename)
+connection = pyodbc.connect("DRIVER={/usr/local/lib/libmyodbc8w.so}; SERVER=localhost; PORT=3306;DATABASE=abe; UID=abe; PASSWORD=th0rnxtc")
 
 
+coefficient = []
+
+for i in dates:
+    bcg = BlockChainGraph(connection)
+    bcg.parse_block_ontime(*i)
+    coefficient.append(bcg.as_igraph.transitivity_undirected())
+    
+
+print(coefficient)
 
 
-
-connection = pymysql.connect(host='localhost', user='root', passwd='Mama1995', db='ABE')
-bcg = BlockChainGraph(connection)
-dates = generate_periods(start_date, periods)
-
-bcg.parse_block_ontime(*dates[0])
-bcg.as_igraph.write_graphml('%s.graphml',filename )
-
-filename = 'shit'
-
-create_graph_in_interval(*dates[0])
-
-c_f 
-
-
-
-
-dates
-
-
-dates = generate_periods(start_date, 26)
