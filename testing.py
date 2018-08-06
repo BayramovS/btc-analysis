@@ -21,7 +21,7 @@ import datetime
 import pyodbc
 import numpy as np
 import igraph
-
+from collections import defaultdict
 
 
 
@@ -380,8 +380,18 @@ def transitivity_global(start_date, periods, filename):
     return transitivity
     
         
+def generate_periods(start_date, periods):
+    strt = pd.to_datetime(start_date)
+    start = pd.date_range(strt, periods=periods, freq='W')
+    dates = []
+    #dates.append((strt.date(), start[0].date()))
+    for i in range(len(start[1:])):
+        dates.append((start_date, start[i].date()))
+    dates.pop(0)
+    
+    return dates
 
-dates = [('2009-01-01', '2009-01-07'), ('2009-01-01', '2009-01-14'), ('2009-01-01', '2009-01-21')]
+dates = generate_periods('2010-01-01', 52)
 
 connection = pyodbc.connect("DRIVER={/usr/local/lib/libmyodbc8w.so}; SERVER=localhost; PORT=3306;DATABASE=abe; UID=abe; PASSWORD=th0rnxtc")
 
