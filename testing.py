@@ -354,20 +354,6 @@ def create_graph_in_interval(start_date, end_date, filename='J.graphml'):
     return bcg
   
 
-
-def generate_periods(start_date, periods):
-    strt = pd.to_datetime(start_date)
-    start = pd.date_range(strt, periods=periods, freq='W')
-    dates = []
-    #dates.append((strt.date(), start[0].date()))
-    for i in range(len(start[1:])):
-        dates.append((start[i-1].date(), start[i].date()))
-    dates.pop(0)
-    
-    return dates
-
-
-
 def transitivity_global(start_date, periods, filename):
     connection = pymysql.connect(host='localhost', user='root', passwd='Mama1995', db='ABE')
     bcg = BlockChainGraph(connection)
@@ -382,7 +368,7 @@ def transitivity_global(start_date, periods, filename):
         
 def generate_periods(start_date, periods):
     strt = pd.to_datetime(start_date)
-    start = pd.date_range(strt, periods=periods, freq='W')
+    start = pd.date_range(strt, periods=periods, freq='15D')
     dates = []
     #dates.append((strt.date(), start[0].date()))
     for i in range(len(start[1:])):
@@ -391,7 +377,7 @@ def generate_periods(start_date, periods):
     
     return dates
 
-dates = generate_periods('2010-01-01', 52)
+dates = generate_periods('2010-01-01', 24)
 
 connection = pyodbc.connect("DRIVER={/usr/local/lib/libmyodbc8w.so}; SERVER=localhost; PORT=3306;DATABASE=abe; UID=abe; PASSWORD=th0rnxtc")
 
